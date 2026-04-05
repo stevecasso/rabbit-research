@@ -1,188 +1,191 @@
-# Prompt Architect for Authors
+# Rabbit Research for Authors
 
-A calm, practical web app that turns rough book ideas into structured AI prompts.
-Built to deploy on Vercel in minutes.
+A focused research tool for fiction writers. Set your novel context once, then run
+targeted Research Sprints on specific topics. Each sprint produces a structured index
+card covering key facts, authenticity red flags, sensory detail, and sources. Compile
+everything into a single Research Report to keep beside you as you write.
+
+Part of the AI for Authors Circle suite.
 
 ---
 
 ## What it does
 
-You describe your book idea, chapter goal, or writing challenge. The app sends it
-to Claude and returns a clear, structured prompt you can copy and use in any AI
-writing tool.
+1. **Set your novel context** — genre, period, setting, and an optional premise
+2. **Run Research Sprints** — one focused topic at a time (e.g. "Victorian street medicine, 1870s")
+3. **Get structured index cards** — key facts, research questions, authenticity red flags, sensory detail, sources
+4. **Generate a Research Report** — compiles all your cards into a single formatted brief
 
-Optional dropdowns let you specify your writing stage, type of help, and
-preferred tone — so the output is always tailored to where you actually are.
+Two research modes are available: Claude's built-in knowledge (fast, reliable for most topics)
+or live web search (slower but useful for recent or obscure subjects).
 
 ---
 
 ## Project structure
 
 ```
-prompt-architect-for-authors/
+rabbit-research/
 ├── api/
-│   ├── auth.js          ← Backend: password check (never exposes the password)
-│   └── chat.js          ← Backend: the AI call lives here (server-side only)
+│   ├── sprint.js          ← Research sprint handler (direct + web search modes)
+│   ├── report.js          ← Research report compiler
+│   ├── auth/
+│   │   ├── _utils.js      ← Shared auth utilities (token signing, allow-list check)
+│   │   ├── request.js     ← Magic link email sender
+│   │   └── verify.js      ← Magic link verifier, sets session token
+│   └── webhooks/
+│       └── wp.js          ← FluentCart webhook (grants/revokes access via Upstash)
 ├── public/
-│   └── index.html       ← Frontend: everything the user sees
-├── package.json         ← Node.js dependencies
-├── vercel.json          ← Vercel routing config
-└── README.md            ← This file
+│   └── index.html         ← Full React frontend (loaded via CDN, no build step)
+├── server.js              ← Local dev server (mirrors Vercel routing)
+├── package.json
+├── vercel.json
+└── .env                   ← Local environment variables (never commit this)
 ```
 
 ---
 
-## Setup: local development
+## How access works
 
-### 1. Install Node.js
+Access is managed via magic link email authentication — no passwords.
 
-If you don't have it, download Node.js (version 18 or higher) from:
-https://nodejs.org
+- Users enter their email address and receive a sign-in link
+- The link is valid for 15 minutes and sets a 7-day session token
+- The allow-list is stored in Upstash Redis and updated automatically when someone
+  purchases via FluentCart on aiforauthorscircle.com
+- Your own admin email (`ALLOWED_EMAILS`) always has access regardless of the Redis store
 
-### 2. Install dependencies
+---
 
-Open Terminal, navigate to this folder, and run:
+## Local development
+
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Add your API key and access password
+### 2. Check your .env file
 
-Create a file called `.env` in the root of this folder:
+The `.env` file should already be present. Confirm it contains:
 
 ```
-ANTHROPIC_API_KEY=your-api-key-here
-ACCESS_PASSWORD=your-chosen-password-here
+ANTHROPIC_API_KEY=your-key
+AUTH_SECRET=your-secret
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=noreply@aiforauthorscircle.com
+ALLOWED_EMAILS=your@email.com
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+WP_WEBHOOK_SECRET=mckenzie2026
 ```
 
-- Get your Anthropic API key from: https://console.anthropic.com
-- `ACCESS_PASSWORD` is the password users must enter to access the app. Choose anything you like.
-
-**Important:** Never commit this file to Git. It is already listed in .gitignore.
-
-### 4. Run locally
+### 3. Run locally
 
 ```bash
 npm run dev
 ```
 
-Then open http://localhost:3000 in your browser.
+Open http://localhost:3000 in your browser.
+
+In local dev without a real Resend key configured, the magic link prints to the
+terminal instead of being emailed — copy and paste it into your browser to sign in.
 
 ---
 
 ## Deployment: Vercel
 
-### 1. Create a Vercel account
-
-Sign up free at https://vercel.com
-
-### 2. Install the Vercel CLI (if not already)
+### 1. Push to GitHub
 
 ```bash
-npm install -g vercel
+git init
+git add -A
+git commit -m "Initial build: Rabbit Research for Authors"
+git remote add origin https://github.com/stevecasso/rabbit-research.git
+git push -u origin main
 ```
 
-### 3. Deploy
+### 2. Create a Vercel project
 
-From inside this project folder, run:
+Vercel dashboard → **Add New Project** → import from GitHub → select `rabbit-research`.
 
-```bash
-vercel
-```
+### 3. Add environment variables
 
-Follow the prompts. Vercel will detect the project structure automatically.
-
-### 4. Add your environment variables to Vercel
-
-In the Vercel dashboard:
-1. Go to your project → **Settings** → **Environment Variables**
-2. Add each variable below, one at a time:
+In Vercel → your project → **Settings** → **Environment Variables**:
 
 | Name | Value |
 |---|---|
 | `ANTHROPIC_API_KEY` | Your Anthropic API key |
-| `ACCESS_PASSWORD` | The password you want users to enter |
+| `AUTH_SECRET` | Long random string (already set in .env) |
+| `RESEND_API_KEY` | Your Resend API key |
+| `RESEND_FROM_EMAIL` | `noreply@aiforauthorscircle.com` |
+| `ALLOWED_EMAILS` | Your admin email address |
+| `UPSTASH_REDIS_REST_URL` | From your Upstash dashboard |
+| `UPSTASH_REDIS_REST_TOKEN` | From your Upstash dashboard |
+| `WP_WEBHOOK_SECRET` | Shared secret matching your WordPress snippet |
 
-3. Set **Environment** to Production (and Preview if you want)
-4. Redeploy the project for the variables to take effect
+### 4. Deploy
 
-Both values are stored securely by Vercel and never exposed to the browser.
-
-### Changing the password
-
-To change the access password:
-- **Locally:** edit the `ACCESS_PASSWORD` line in your `.env` file and restart the server
-- **On Vercel:** go to Settings → Environment Variables, update `ACCESS_PASSWORD`, then redeploy
+Vercel deploys automatically on every push to `main`.
 
 ---
 
-## Customising the app
+## Adding users
 
-### Inserting your master system prompt
+**Automatically** — FluentCart purchases on aiforauthorscircle.com trigger the
+`/api/webhooks/wp` endpoint, which adds the customer's email to Upstash Redis.
+The WordPress snippet in FluentSnippets handles this.
 
-Open `api/chat.js` and find the `MASTER_SYSTEM_PROMPT` constant near the top.
-Replace the placeholder text with your full Prompt Architect instructions.
-This is the same content as your custom GPT's system prompt.
+**Manually** — In your Upstash dashboard → Data Browser → Add Key:
+- Key: `user:theirmail@example.com`
+- Type: JSON
+- Value: `{"tier":"standalone","grantedAt":"2026-01-01T00:00:00.000Z"}`
 
-```js
-const MASTER_SYSTEM_PROMPT = `
-  // Paste your full instructions here
-`;
+Use `"tier":"vip"` for VIP Circle members, `"tier":"standalone"` for
+Prompt Architect standalone buyers.
+
+---
+
+## The research sprint API
+
+`POST /api/sprint`
+
+```json
+{
+  "topic": "Victorian street medicine and travelling apothecaries, 1870s",
+  "novelCtx": "Genre: Historical Fiction | Period: Victorian 1880s | Setting: London",
+  "useWebSearch": false
+}
 ```
 
-### Adding a knowledge / document layer
-
-In `api/chat.js`, find the `KNOWLEDGE_LAYER` constant just below the system prompt.
-Paste in excerpts from your prompting guides, example libraries, or reference
-material. This text will be included in every request.
-
-```js
-const KNOWLEDGE_LAYER = `
-  // Paste your reference content here
-`;
+Returns:
+```json
+{
+  "result": "{\"title\":\"...\",\"keyQuestions\":[...],\"essentialFacts\":\"...\",\"authenticityFlags\":[...],\"sensoryDetails\":\"...\",\"sources\":[...]}"
+}
 ```
 
-For a more advanced setup (many documents, PDF ingestion), this constant can
-later be replaced with a call to a vector database or a pre-built retrieval
-function — the placeholder comment in the file explains where to plug that in.
+`POST /api/report`
 
----
-
-## Adding access control (V2)
-
-The backend API route (`api/chat.js`) has a clearly marked placeholder for
-authentication. To add a simple password or token gate:
-
-1. Set an environment variable like `ACCESS_TOKEN=some-secret-value`
-2. In the frontend, collect the token (e.g. a password field on first load)
-3. Send it as an `Authorization` header with each request
-4. In `api/chat.js`, uncomment and fill in the access control placeholder
-
-For a full user login system, tools like Clerk or Auth0 can be integrated later.
-
----
-
-## Changing the AI model
-
-In `api/chat.js`, find this line:
-
-```js
-model: "claude-opus-4-6",
+```json
+{
+  "sprints": [...],
+  "ctx": { "genre": "Historical Fiction", "period": "Victorian 1880s", "setting": "London", "premise": "" }
+}
 ```
 
-You can swap this for any Anthropic model, for example:
-- `"claude-sonnet-4-6"` — faster and cheaper, still very capable
-- `"claude-haiku-4-5-20251001"` — fastest, best for quick drafts
+Returns a formatted markdown Research Report.
+
+Both endpoints require a valid `Authorization: Bearer <session_token>` header.
 
 ---
 
-## Notes for non-developers
+## Notes
 
-- **You never need to touch `vercel.json`** — it just tells Vercel how to route
-  requests and can be left as-is.
-- **All styling is in `public/index.html`** inside the `<style>` block at the top.
-  Colours, fonts, and spacing are controlled by the `:root` variables — easy to
-  adjust without knowing much CSS.
-- **The AI call is entirely in `api/chat.js`** — this is the only file that
-  touches your API key or sends requests to Anthropic.
+- **No build step required** — React is loaded via CDN. The frontend is a single
+  `public/index.html` file using Babel Standalone for JSX.
+- **API keys never reach the browser** — all Anthropic calls happen inside
+  `api/sprint.js` and `api/report.js` on the server.
+- **Upstash Redis is shared** with other apps in the suite — a user in the store
+  has access to whichever apps check that store.
+- **Web search mode** uses Anthropic's built-in web search tool and requires
+  a compatible model (claude-sonnet-4-5 or newer).
