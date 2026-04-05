@@ -535,6 +535,158 @@
                 Begin Research →
               </button>
             </div>
+            {/* Guide modal */}
+          {showGuide && (
+            <div onClick={e => e.target === e.currentTarget && setShowGuide(false)}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
+                display: "flex", alignItems: "flex-start", justifyContent: "center",
+                padding: "32px 16px", overflowY: "auto", zIndex: 200 }}>
+              <div style={{ background: C.paper, borderRadius: "4px", padding: "40px",
+                maxWidth: "720px", width: "100%", position: "relative",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.3)", marginBottom: "32px" }}>
+                <button onClick={() => setShowGuide(false)}
+                  style={{ position: "absolute", top: "16px", right: "16px", background: "none",
+                    border: "none", fontSize: "20px", cursor: "pointer",
+                    color: C.textLight, padding: "4px 8px", lineHeight: 1 }}>✕</button>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "32px" }}>🐇</span>
+                  <div style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "26px", color: C.green }}>Getting Started Guide</div>
+                </div>
+                <div style={{ fontSize: "14px", color: C.textLight, fontStyle: "italic", marginBottom: "24px" }}>
+                  How to get the most from Rabbit Research
+                </div>
+                <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: "20px" }}>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "0 0 10px", fontWeight: "700" }}>
+                    1. Set Your Novel Context First
+                  </h2>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    The context screen is the foundation of everything Rabbit Research does for you.
+                    When you enter your <strong>genre</strong>, <strong>period</strong>, <strong>setting</strong>,
+                    and optionally a <strong>brief premise</strong>, you are telling the AI exactly what world
+                    your novel inhabits.
+                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    Every research sprint you run afterwards is shaped by this context. A question about
+                    "street food" will produce very different results for Victorian London versus 1920s New Orleans.
+                    The more specific your context, the more tailored and useful your research will be.
+                  </p>
+                  <div style={{ background: "#e6eeea", border: "1px solid #bad0c2", borderRadius: "3px",
+                    padding: "14px 16px", margin: "12px 0 20px", fontSize: "14px", color: C.textMid, lineHeight: "1.7" }}>
+                    <strong style={{ color: C.green }}>Tip:</strong> You can change your context at any time
+                    using the "Change Context" button in the header. This is useful if you are researching
+                    multiple novels or different sections of the same book with different settings.
+                  </div>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "24px 0 10px", fontWeight: "700" }}>
+                    2. Run Focused Research Sprints
+                  </h2>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    A sprint is a single, focused research query on one topic. Think of it like sending
+                    a research assistant to the library with one specific question.
+                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    <strong>The key to great results is specificity.</strong> Instead of broad topics,
+                    narrow your focus:
+                  </p>
+                  <ul style={{ paddingLeft: "20px", margin: "8px 0 12px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    <li style={{ marginBottom: "4px" }}>Instead of "Victorian food" try "Street food and pie sellers in 1880s London"</li>
+                    <li style={{ marginBottom: "4px" }}>Instead of "Medieval weapons" try "Longbow tactics at Agincourt and English archer training"</li>
+                    <li style={{ marginBottom: "4px" }}>Instead of "1920s fashion" try "Women's daywear and department store shopping in 1920s Manhattan"</li>
+                  </ul>
+                  <p style={{ margin: "0 0 12px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    Each sprint produces a structured <strong>research card</strong> containing five sections
+                    designed specifically for fiction writers.
+                  </p>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "24px 0 10px", fontWeight: "700" }}>
+                    3. Understanding Your Research Cards
+                  </h2>
+                  <p style={{ margin: "0 0 10px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    Each card gives you five things:
+                  </p>
+                  <div style={{ display: "grid", gap: "10px", margin: "0 0 16px" }}>
+                    {[
+                      { label: "Key Research Questions", desc: "The questions a thorough author should be able to answer. Use these to guide deeper research or to check your own knowledge." },
+                      { label: "Essential Facts", desc: "Core factual information about the topic, tailored to your novel's period and setting. The facts your story needs to get right." },
+                      { label: "Authenticity Red Flags", desc: "Common mistakes and anachronisms that could break reader trust. These are the errors that knowledgeable readers will notice." },
+                      { label: "Sensory and Atmospheric Detail", desc: "What it looked, sounded, smelled, and felt like. These vivid details bring scenes to life and are hard to invent without research." },
+                      { label: "Sources to Explore", desc: "Books, archives, and resources for deeper investigation when you need to go further." },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: C.bg, border: `1px solid ${C.borderLight}`,
+                        borderRadius: "3px", padding: "12px 14px" }}>
+                        <div style={{ fontSize: "13px", fontWeight: "700", color: C.amber,
+                          textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>
+                          {item.label}
+                        </div>
+                        <div style={{ fontSize: "14px", color: C.textMid, lineHeight: "1.7" }}>
+                          {item.desc}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ background: "#e6eeea", border: "1px solid #bad0c2", borderRadius: "3px",
+                    padding: "14px 16px", margin: "12px 0 20px", fontSize: "14px", color: C.textMid, lineHeight: "1.7" }}>
+                    <strong style={{ color: C.green }}>Tip:</strong> Use the "Copy card" button on any card
+                    to copy its contents to your clipboard, then paste it into your writing notes, Scrivener,
+                    Notion, or wherever you plan your novel.
+                  </div>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "24px 0 10px", fontWeight: "700" }}>
+                    4. Live Web Search vs Claude's Knowledge
+                  </h2>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    You can toggle between two research modes:
+                  </p>
+                  <ul style={{ paddingLeft: "20px", margin: "8px 0 12px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    <li style={{ marginBottom: "6px" }}><strong>Claude's Knowledge (recommended):</strong> Fast and thorough.
+                      Draws on extensive training data covering history, science, culture, geography and more.
+                      Best for most historical and general research topics.</li>
+                    <li style={{ marginBottom: "6px" }}><strong>Live Web Search:</strong> Searches the internet in real time.
+                      Slower, but useful for very recent events, niche local history, or obscure topics
+                      that benefit from current online sources.</li>
+                  </ul>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "24px 0 10px", fontWeight: "700" }}>
+                    5. Build Up, Then Compile Your Report
+                  </h2>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    Run as many sprints as your novel needs. You might run five sprints for a short story
+                    or twenty or more for a complex historical novel. There is no limit.
+                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    When you are ready, click <strong>"Generate Research Report"</strong> to compile
+                    all your cards into a single, organised document. This report is designed to sit
+                    beside you as you write, a quick-reference companion covering everything you have researched.
+                  </p>
+                  <p style={{ margin: "0 0 12px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    You can copy the entire report to your clipboard with one click.
+                  </p>
+                  <h2 style={{ fontFamily: "Palatino Linotype,Palatino,Georgia,serif",
+                    fontSize: "20px", color: C.green, margin: "24px 0 10px", fontWeight: "700" }}>
+                    6. A Suggested Workflow
+                  </h2>
+                  <ol style={{ paddingLeft: "20px", margin: "8px 0 16px", fontSize: "15px", color: C.textMid, lineHeight: "1.8" }}>
+                    <li style={{ marginBottom: "6px" }}>Set your novel context with as much detail as possible</li>
+                    <li style={{ marginBottom: "6px" }}>List the topics your novel needs you to research</li>
+                    <li style={{ marginBottom: "6px" }}>Run a sprint for each topic, keeping queries focused and specific</li>
+                    <li style={{ marginBottom: "6px" }}>Review each card and note any areas that need deeper investigation</li>
+                    <li style={{ marginBottom: "6px" }}>Run follow-up sprints on any gaps or questions that emerged</li>
+                    <li style={{ marginBottom: "6px" }}>Generate your Research Report and keep it to hand while writing</li>
+                  </ol>
+                  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: "3px",
+                    padding: "16px 18px", marginTop: "20px", textAlign: "center" }}>
+                    <div style={{ fontSize: "13px", color: C.textLight, textTransform: "uppercase",
+                      letterSpacing: "0.08em", marginBottom: "6px" }}>An AI for Authors Circle Member Tool</div>
+                    <div style={{ fontSize: "14px", color: C.textMid }}>
+                      Questions or feedback? Let us know in the community.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           </div>
         );
       }
