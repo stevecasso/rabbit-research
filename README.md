@@ -1,4 +1,4 @@
-# Rabbit Research for Authors
+# Story Scout for Authors
 
 A focused research tool for fiction writers. Set your novel context once, then run
 targeted Research Sprints on specific topics. Each sprint produces a structured index
