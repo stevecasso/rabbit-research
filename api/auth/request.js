@@ -1,12 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/auth/request
 //
-// Accepts { email }.  If the email is on the allow-list it sends a magic-link
-// via Resend.  Always returns { ok: true } regardless — this prevents callers
-// from learning which emails are or are not on the list.
+// Accepts { email }. Sends a magic-link to any valid email address.
+// Always returns { ok: true } regardless — this prevents callers
+// from learning whether an email was sent or not.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createToken, isEmailAllowed, isValidEmail } from "./_utils.js";
+import { createToken, isValidEmail } from "./_utils.js";
 
 const MAGIC_LINK_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -17,38 +17,33 @@ export default async function handler(req, res) {
 
   const { email } = req.body;
 
-  // Validate format (this is just a sanity check — we don't reveal allow-list status)
+  // Validate format
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: "Please enter a valid email address." });
   }
 
   const normalised = email.trim().toLowerCase();
 
-  // Only actually send if the email is on the allow-list
-  if (await isEmailAllowed(normalised)) {
-    const token = createToken(
-      { email: normalised, type: "magic" },
-      MAGIC_LINK_EXPIRY_MS
-    );
+  // Send magic link to any valid email — no allow-list check
+  const token = createToken(
+    { email: normalised, type: "magic" },
+    MAGIC_LINK_EXPIRY_MS
+  );
 
-    // Build the magic link URL from the incoming request host
-    const proto    = req.headers["x-forwarded-proto"] || "http";
-    const host     = req.headers["host"] || "localhost:3000";
-    const magicLink = `${proto}://${host}/api/auth/verify?token=${encodeURIComponent(token)}`;
+  // Build the magic link URL from the incoming request host
+  const proto     = req.headers["x-forwarded-proto"] || "http";
+  const host      = req.headers["host"] || "localhost:3000";
+  const magicLink = `${proto}://${host}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
-    await sendMagicLinkEmail(normalised, magicLink);
-  }
+  await sendMagicLinkEmail(normalised, magicLink);
 
-  // Always return ok so callers cannot enumerate the allow-list
+  // Always return ok
   return res.status(200).json({ ok: true });
 }
 
 // ── Send email via Resend ─────────────────────────────────────────────────────
 
 async function sendMagicLinkEmail(email, magicLink) {
-  // In local dev without a real RESEND_API_KEY, print the link to the console
-  // so you can test the full flow without sending a real email.
-  // A real Resend key always starts with "re_".
   const resendKey = process.env.RESEND_API_KEY || "";
   if (!resendKey || !resendKey.startsWith("re_")) {
     console.log(`\n  ┌─ Magic link (dev mode — no RESEND_API_KEY set) ──────────`);
@@ -83,8 +78,6 @@ async function sendMagicLinkEmail(email, magicLink) {
     console.log(`  │  To: ${email}`);
     console.log(`  │  Link: ${magicLink}`);
     console.log(`  └──────────────────────────────────────────────────────────\n`);
-    // Don't throw — we already committed to returning ok: true above.
-    // Log the failure server-side and move on.
   }
 }
 
